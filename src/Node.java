@@ -1,7 +1,5 @@
 public class Node {
 
-	public static final int NEVER_USED = 0;
-	public static final int PREVIOUSLY_USED = 1;
 	private Node next;
 	private String word;
 	private int wordCount;
@@ -10,6 +8,7 @@ public class Node {
 	public Node(String word){
 		this.word = word.toLowerCase();
 		this.used = true;
+		wordCount = 1;
 	}
 	
 	public Node getNext() {
