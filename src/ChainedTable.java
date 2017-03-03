@@ -17,9 +17,9 @@ public class ChainedTable {
 	List<String> temporaryWordLibrary = null; // Will load all text to a mapped list
 	private static final int tableSize = 127; // Set the size of the chained hash table
 	Node[] theChainedTable = new Node[tableSize]; // Here is the actual table
-	
+
 	/// Walkers library
-	
+
 	private int uniqueWords= 0;
 	private String longestWord = "";
 	private int longestChainInList = 0;
@@ -27,44 +27,46 @@ public class ChainedTable {
 	private int totalWordCount = 0;
 	private String mostFrequentWord;
 	private int mostFrequentWordCount = 0;
-	
-	
+
+
 	/// End walkers library
 
-	
-	
+
 	private int hashFunction(String word){ // Here is the hash function
 		int asciiValue = 0;
 		char[] wordArray = word.toLowerCase().toCharArray();
 		for(char x:wordArray){
 			asciiValue += (int) x;
 		}
-		return asciiValue % 127;
+		// Return ascii values mod 127
+		return asciiValue % 127; 
 	}
 
+
 	// Search function calls recursive search
-	public void search(String word){
+	public boolean search(String word){
 		word = word.toLowerCase(); // Just in case
 		int startNode = hashFunction(word);
+		// See if bucket is empty
 		if (theChainedTable[startNode] == null){
 			System.out.println("Not found");
+			return false;
 		}
-		else{
-			recursiveFind(word, theChainedTable[startNode]);
+		else{ // Call search function
+			return recursiveFind(word, theChainedTable[startNode]);
 		}
 	}
 
 	// Recursive search for node, if found list the iterations
-	private boolean recursiveFind(String word, Node nodeAt){ // Because recursion is fun
+	private boolean recursiveFind(String word, Node nodeAt){ 
 		if (word.matches(nodeAt.getWord())){
-			System.out.println("Found");
-			System.out.println("Iterations: " + nodeAt.getWordCount());
+			System.out.println(nodeAt.getWordCount() + " times");
 			return true;
 		}
 		if (nodeAt.getNext() == null){
 			System.out.println("Not found");
 			return false;
-		}
+		} // Recurse
 		else return recursiveFind(word, nodeAt.getNext());
 	}
 
@@ -90,7 +92,10 @@ public class ChainedTable {
 				else{
 					// Else if we are at the end
 					if (nodePointer.getNext() == null){
-						nodePointer.setNext(new Node(wordToAdd));
+						// Set to head
+						Node pointerOldHead = theChainedTable[index];
+						theChainedTable[index] = new Node(wordToAdd);
+						theChainedTable[index].setNext(pointerOldHead);
 						break;
 					}
 				}
@@ -98,40 +103,42 @@ public class ChainedTable {
 			}
 		}
 	}
-	
-	
 
+	// Walk the table and get values
 	public boolean walker(int index){
-		
+
 		Node pointerNode = theChainedTable[index];
 		int chainLength = 0;
 
 		while(pointerNode != null){
 			totalWordCount += pointerNode.getWordCount();
+			// Increment counters 
 			chainLength++;
 			uniqueWords++;
+			// Set longest word if hit
 			if (pointerNode.getWord().length() > longestWord.length()){
 				longestWord = pointerNode.getWord();
 			}
+			// Set most frewuent if hit
 			if (pointerNode.getWordCount() > mostFrequentWordCount){
 				mostFrequentWord = pointerNode.getWord();
 				mostFrequentWordCount = pointerNode.getWordCount();
 			}
 			pointerNode = pointerNode.getNext();
 		}
-
+		// Check the current chain length for longest
 		if (chainLength > longestChainInList){
 			longestChainInList = chainLength;
 		}
-
+		// Check the chain length for shortest
 		if (chainLength < shortestChainInList){
 			shortestChainInList = chainLength;
 		}
-
+		
+		// If theres more to go, keep walking
 		if (index < 126){
-			return walker(index+1); // why does this flop with ++
+			return walker(index+1);  // Recurse 
 		}
-	
 		return false;		
 	}	
 
@@ -140,7 +147,6 @@ public class ChainedTable {
 		int index = 0;
 		while(!temporaryWordLibrary.isEmpty()){
 			outPut = temporaryWordLibrary.get(index).toString();
-
 			outPut = outPut.replaceAll("[^a-zA-Z0-9]","");
 			if (!outPut.isEmpty()){
 				addRecord(outPut.toLowerCase());
@@ -161,7 +167,7 @@ public class ChainedTable {
 		}
 		catch(Exception e){
 			System.out.println("Error " + e.getMessage());
-		}
+		}// Send to punctuation function
 		removePunctuationAndSendToHashTable();	
 	}
 
